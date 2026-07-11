@@ -1,0 +1,5 @@
+git clone https://github.com/Franie83/Edo-Odyssey-PHP-version.git
+cd Edo-Odyssey-PHP-version
+cp .env.example .env
+# Edit .env with production credentials
+docker compose up -d --build
