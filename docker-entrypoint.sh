@@ -1,44 +1,27 @@
 #!/bin/sh
 set -e
 
-echo "=== STARTING ENTRYPOINT ==="
+echo "=== STARTING ENTRYPOINT ===" > /var/log/entrypoint.log
+exec 1>/dev/stdout 2>/dev/stderr
 
 # Create directories
-mkdir -p storage/framework/cache
-mkdir -p storage/framework/sessions
-mkdir -p storage/framework/views
-mkdir -p storage/logs
-mkdir -p bootstrap/cache
+mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
 
 # Set permissions
 chmod -R 775 storage bootstrap/cache
 
+echo "=== CHECKING PHP ==="
+php -v
+
 echo "=== CHECKING COMPOSER ==="
-which composer || echo "Composer not found"
-composer --version || echo "Composer version check failed"
-
-echo "=== CHECKING VENDOR DIRECTORY ==="
-if [ -d "vendor" ]; then
-    echo "Vendor directory exists"
-    ls -la vendor/ | head -20
-else
-    echo "Vendor directory NOT found"
-fi
-
-echo "=== CHECKING COMPOSER.JSON ==="
-cat composer.json | grep "laravel/framework" || echo "laravel/framework not found in composer.json"
-
-echo "=== REMOVING VENDOR ==="
-rm -rf vendor
-rm -f composer.lock
+composer --version
 
 echo "=== INSTALLING DEPENDENCIES ==="
 composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd -vvv
 
-echo "=== CHECKING VENDOR AFTER INSTALL ==="
+echo "=== CHECKING VENDOR ==="
 if [ -d "vendor/laravel/framework" ]; then
-    echo "✅ Laravel framework installed successfully!"
-    ls -la vendor/laravel/framework/
+    echo "✅ Laravel framework installed!"
 else
     echo "❌ Laravel framework NOT installed!"
     ls -la vendor/ || echo "No vendor directory"
