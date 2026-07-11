@@ -1,0 +1,34 @@
+# Laravel
+/vendor/
+/node_modules/
+/storage/*.key
+/storage/logs/
+/storage/framework/
+/bootstrap/cache/
+.env
+.env.backup
+.env.production
+*.log
+*.sqlite
+*.sqlite-journal
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.sublime-*
+
+# Composer
+composer.phar
+composer.lock  # optional – commit this if you want version lock
+
+# NPM
+package-lock.json
+yarn.lock
+
+# Docker (optional – if not needed)
+docker-compose.override.yml
+
+# Project specific
+/public/storage/

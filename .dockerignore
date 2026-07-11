@@ -1,0 +1,11 @@
+vendor/
+node_modules/
+.git/
+storage/framework/
+storage/logs/
+.env
+.gitignore
+Dockerfile
+docker-compose.yml
+.dockerignore
+README.md

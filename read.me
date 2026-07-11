@@ -1,0 +1,436 @@
+I'll create a comprehensive `README.md` documentation file for the Edo Odyssey project.
+
+---
+
+```markdown
+# 🏛️ Edo Odyssey – Edo State Tourism Platform
+
+Welcome to **Edo Odyssey**, the official digital tourism platform for Edo State, Nigeria. Built to showcase the rich cultural heritage, natural wonders, and hospitality of Edo State, this platform connects tourists with authentic local experiences, certified guides, accommodations, dining, and events.
+
+---
+
+## 📖 Table of Contents
+
+- [About the Project](#about-the-project)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Installation](#installation)
+  - [Local Development](#local-development)
+  - [Docker Setup](#docker-setup)
+- [Configuration](#configuration)
+- [Database Setup](#database-setup)
+- [User Roles](#user-roles)
+- [Demo Accounts](#demo-accounts)
+- [Key Workflows](#key-workflows)
+  - [Booking Approval Flow](#booking-approval-flow)
+  - [Heritage Points System](#heritage-points-system)
+  - [QR Code Generation](#qr-code-generation)
+- [Admin Panel](#admin-panel)
+- [Analytics & Reporting](#analytics--reporting)
+- [Deployment](#deployment)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+---
+
+## 🚀 About the Project
+
+**Edo Odyssey** is a Laravel-based web application developed for the **Edo State Tourism Agency (EDSTA)**. It serves as a one-stop platform for:
+
+- Discovering attractions, guides, hotels, restaurants, and events.
+- Booking services directly online.
+- Managing tourism content through an intuitive admin panel.
+- Providing data-driven insights through analytics.
+
+The platform is designed to boost tourism revenue, support local businesses, and position Edo State as a premier destination in Nigeria and Africa.
+
+---
+
+## ✨ Features
+
+### 🧑‍🤝‍🧑 Public Frontend
+- **Attraction Listings** – Browse with category, city, price, and rating filters.
+- **Tour Guides** – Certified guides with bio, languages, rates, and availability.
+- **Hotels & Restaurants** – Search by location, stars, cuisine, and price.
+- **Events** – Upcoming festivals and cultural events with countdown timers.
+- **News** – Tourism news with commenting for authenticated users.
+- **Booking** – Book attractions, guides, hotels, restaurants, and events.
+
+### 👤 User Dashboard
+- **Profile Management** – Update personal info, avatar, and password.
+- **Manage Offerings** – Guides, hotels, restaurants, and event organizers can add/edit their listings.
+- **Booking History** – View all bookings with status and details.
+- **Notifications** – Real-time alerts for booking updates and approvals.
+- **Heritage Points** – Gamification system rewarding engagement.
+
+### 🛠️ Admin Panel
+- **Dashboard** – Overview with key metrics and pending approvals.
+- **Content Management** – CRUD for attractions, guides, hotels, restaurants, events, news, categories.
+- **Approval System** – Approve/reject bookings, reviews, and vendor listings.
+- **User Management** – Create, edit, delete users and assign roles.
+- **Analytics** – Revenue charts, booking stats, user roles with date filters and CSV export.
+- **Audit Logs** – Track all admin actions.
+- **CMS Settings** – Manage site name, contact info, footer text, etc.
+
+### 🔐 Authentication & Roles
+- **Registration** – Choose role: Tourist, Guide, Hotel, Restaurant, Event Organizer.
+- **Quick Login (Demo)** – One-click login for testing.
+- **Role-Based Access** – Different dashboards and permissions per role.
+
+### 📱 QR Codes
+- **Auto-generated** for each attraction.
+- **Scan to visit** – Directs to the attraction detail page.
+- **Regenerate** – Admin can regenerate individual or all QR codes.
+
+### 📊 Analytics & Reporting
+- **Revenue Over Time** – Line chart with date range filter.
+- **Bookings by Status/Type** – Doughnut charts.
+- **Users by Role** – Distribution chart.
+- **CSV Export** – Export bookings and users data with date filtering.
+
+---
+
+## 🛠️ Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| **Backend** | Laravel 12 (PHP 8.2+) |
+| **Frontend** | Bootstrap 5, Blade, Chart.js |
+| **Database** | SQLite (dev) / MySQL (prod) |
+| **QR Code** | chillerlan/php-qrcode |
+| **Authentication** | Laravel Breeze (customized) |
+| **Deployment** | Docker, Nginx, PHP-FPM |
+| **Version Control** | Git |
+
+---
+
+## 📦 Installation
+
+### ✅ Local Development (Without Docker)
+
+#### Prerequisites
+- PHP 8.2+ with extensions: `pdo`, `mbstring`, `gd`, `zip`, `sqlite3`
+- Composer
+- Node.js & NPM (optional, for frontend assets)
+
+#### Steps
+
+```bash
+# 1. Clone the repository
+git clone <repository-url> edo-odyssey
+cd edo-odyssey
+
+# 2. Install PHP dependencies
+composer install
+
+# 3. Copy environment file
+cp .env.example .env
+
+# 4. Generate application key
+php artisan key:generate
+
+# 5. Configure database in .env (SQLite default)
+#    Create an empty SQLite database
+touch database/database.sqlite
+
+# 6. Run migrations and seeders
+php artisan migrate --seed
+
+# 7. Start the development server
+php artisan serve
+```
+
+The application will be available at `http://127.0.0.1:8000`.
+
+---
+
+### 🐳 Docker Setup (Recommended for Production)
+
+#### Prerequisites
+- Docker Desktop installed (Windows/Mac/Linux)
+
+#### Steps
+
+```bash
+# 1. Clone the repository
+git clone <repository-url> edo-odyssey
+cd edo-odyssey
+
+# 2. Build and start containers
+docker compose up -d --build
+
+# 3. Access the app
+#    Open http://localhost:8000
+```
+
+The Docker setup includes:
+- **App** – PHP-FPM container
+- **Nginx** – Web server
+- **MySQL** – Production database
+
+#### Stop Containers
+
+```bash
+docker compose down
+```
+
+#### View Logs
+
+```bash
+docker compose logs -f
+```
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+The `.env` file contains all environment-specific settings. Key variables:
+
+```env
+APP_NAME=EdoOdyssey
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=mysql          # or sqlite
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=edoodyssey
+DB_USERNAME=root
+DB_PASSWORD=secret
+
+SESSION_DRIVER=file
+CACHE_STORE=file
+```
+
+### CMS Settings
+
+Administrators can manage site-wide settings via the **Admin > CMS Settings** panel:
+- Site Name
+- Contact Phone / Email / Address
+- About EDSTA (footer description)
+- Footer Text
+- Meta Description (SEO)
+
+---
+
+## 🗄️ Database Setup
+
+### SQLite (Default for Local)
+
+```bash
+touch database/database.sqlite
+```
+Then set `DB_CONNECTION=sqlite` in `.env`.
+
+### MySQL (Production)
+
+Set the following in `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=edoodyssey
+DB_USERNAME=root
+DB_PASSWORD=yourpassword
+```
+
+Run migrations:
+
+```bash
+php artisan migrate --seed
+```
+
+---
+
+## 👥 User Roles
+
+| Role | Description |
+|------|-------------|
+| **Tourist** | Can book, review, and manage their profile. |
+| **Guide** | Can manage their guide profile and respond to bookings. |
+| **Hotel** | Can manage multiple hotel listings and accept/reject bookings. |
+| **Restaurant** | Can manage multiple restaurant listings and accept/reject bookings. |
+| **Event Organizer** | Can manage multiple event listings. |
+| **Agency Admin** | Full admin access (content, users, bookings, settings). |
+| **Super Admin** | Full access + additional system controls. |
+
+---
+
+## 🔑 Demo Accounts
+
+For testing purposes, the following accounts are pre-seeded:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Super Admin | superadmin@edoodyssey.ng | demo1234 |
+| Agency Admin | admin@edoodyssey.ng | demo1234 |
+| Tourist | tourist@edoodyssey.ng | demo1234 |
+| Guide | guide@edoodyssey.ng | demo1234 |
+| Hotel | hotel@edoodyssey.ng | demo1234 |
+| Restaurant | restaurant@edoodyssey.ng | demo1234 |
+
+> **Note:** Quick Login links are available on the homepage for instant role switching (development only).
+
+---
+
+## 🔄 Key Workflows
+
+### 📅 Booking Approval Flow
+
+1. **User creates a booking** → Status: `Pending`.
+2. **Admin approves or rejects** → Status: `AdminApproved` / `AdminRejected` (admin comment optional).
+3. **Vendor (guide/hotel/restaurant/event) accepts or rejects** → Status: `VendorAccepted` / `VendorRejected` (vendor comment optional).
+4. **Vendor marks as complete** → Status: `Completed` (tourist earns 30 Heritage Points).
+5. **User can cancel** → Status: `Cancelled` (if still pending or admin-approved).
+
+**Status History** – Every step is logged with timestamp, user, and optional comment. Both admin and client can view the full timeline.
+
+### 🏅 Heritage Points System
+
+| Action | Points |
+|--------|--------|
+| Making a booking | 20 |
+| Writing a review | 10 |
+| Adding a favourite | 5 |
+| Completing a tour | 30 |
+
+**Levels:**
+- 0–49: Explorer
+- 50–99: Bronze Explorer 🥉
+- 100–199: Silver Explorer 🥈
+- 200–499: Gold Explorer 🥇
+- 500+: Platinum Explorer 🏆
+
+### 📱 QR Code Generation
+
+- **Auto-generated** for each attraction upon creation.
+- **Stored** as `.svg` in `storage/app/public/qr_codes`.
+- **Displayed** on attraction detail pages.
+- **Regenerate** – Admins can regenerate individual or all QR codes via the admin panel.
+
+---
+
+## 🛠️ Admin Panel
+
+### Access
+```
+http://yourdomain.com/admin
+```
+
+### Key Sections
+
+| Section | Functionality |
+|---------|---------------|
+| **Dashboard** | Overview stats, pending approvals, recent bookings/users, quick actions. |
+| **Attractions** | CRUD, assign user, regenerate QR. |
+| **Guides** | CRUD, verify (approve/reject), assign user. |
+| **Hotels** | CRUD, approve, assign user. |
+| **Restaurants** | CRUD, approve, assign user. |
+| **Events** | CRUD, approve, assign user. |
+| **News** | CRUD, publish/unpublish. |
+| **Categories** | CRUD, sort order. |
+| **Users** | CRUD, role assignment. |
+| **Bookings** | Approve/reject with comments, view history. |
+| **Reviews** | Approve/delete user reviews. |
+| **Analytics** | Revenue chart, booking stats, user roles, date filters, CSV export. |
+| **Audit Logs** | Admin action history. |
+| **CMS Settings** | Site name, contact info, footer, meta description. |
+
+---
+
+## 📊 Analytics & Reporting
+
+### Available Charts
+- **Revenue Over Time** – Line chart (default last 30 days, filterable by date range).
+- **Bookings by Status** – Doughnut chart.
+- **Bookings by Type** – Doughnut chart.
+- **Users by Role** – Doughnut chart.
+
+### Export
+- **Bookings CSV** – Includes reference, type, target, user, amount, status, date.
+- **Users CSV** – Includes name, email, role, heritage points, registered date.
+
+**Date filters** are applied to all charts and exports.
+
+---
+
+## 🚀 Deployment
+
+### Using Docker (Production)
+
+1. **Set up environment** – Create `.env` with production credentials.
+2. **Build and run**:
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d --build
+   ```
+3. **Configure SSL** (recommended) – Use Let's Encrypt or a reverse proxy.
+4. **Set up cron** – Schedule the Laravel scheduler (if used).
+
+### Manual Deployment (Shared Hosting)
+
+1. Upload all files to your server.
+2. Set the document root to `public/`.
+3. Configure environment variables in `.env`.
+4. Run `composer install --no-dev --optimize-autoloader`.
+5. Run `php artisan migrate --force`.
+6. Set appropriate file permissions (`storage` and `bootstrap/cache` writable).
+
+---
+
+## 🧪 Troubleshooting
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| `The only supported ciphers are AES-128-CBC and AES-256-CBC` | Generate a new app key: `php artisan key:generate` |
+| `SQLSTATE[HY000] [2002] No such file or directory` | SQLite path issue – set `DB_DATABASE` to absolute path or use MySQL. |
+| `Class 'App\Models\QrCode' not found` | Run `composer dump-autoload` and clear caches. |
+| `403 Forbidden` on admin | Ensure the user has `is_admin = 1` or correct role. |
+| `404 Not Found` on routes | Run `php artisan route:clear` and `php artisan route:cache`. |
+
+### Cache Clearing
+
+```bash
+php artisan optimize:clear
+php artisan config:clear
+php artisan view:clear
+php artisan route:clear
+php artisan cache:clear
+```
+
+---
+
+## 📄 License
+
+This project is proprietary software developed for the **Edo State Tourism Agency (EDSTA)**. Unauthorized copying, distribution, or use is prohibited without prior written consent.
+
+---
+
+## 🙏 Acknowledgements
+
+- **Laravel** – The PHP framework.
+- **Bootstrap** – Frontend UI toolkit.
+- **Chart.js** – Charts for analytics.
+- **chillerlan/php-qrcode** – QR code generation.
+- **Edo State Tourism Agency** – For the vision and support.
+
+---
+
+## 📬 Contact
+
+For support or inquiries, please contact:
+
+**Edo State Tourism Agency (EDSTA)**  
+Government House Road, GRA, Benin City, Edo State, Nigeria  
+Email: info@edsta.edo.gov.ng  
+Phone: +234 (0) 52 255 000  
+
+---
+
+**Built with ❤️ for Edo State.**
+```

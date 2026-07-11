@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edoodyssey_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=edoodyssey
+      - DB_USERNAME=edoodyssey
+      - DB_PASSWORD=secret
+      - SESSION_DRIVER=file
+      - CACHE_STORE=file
+    networks:
+      - edoodyssey
+
+  nginx:
+    image: nginx:alpine
+    container_name: edoodyssey_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - edoodyssey
+
+  db:
+    image: mysql:8.0
+    container_name: edoodyssey_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: edoodyssey
+      MYSQL_USER: edoodyssey
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - edoodyssey
+
+volumes:
+  db_data:
+
+networks:
+  edoodyssey:
+    driver: bridge
