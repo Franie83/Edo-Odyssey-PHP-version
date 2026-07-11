@@ -1,17 +1,27 @@
 #!/bin/sh
 
-# Create bootstrap/cache directory if missing
+# Create all required directories
+mkdir -p /var/www/html/storage/app/public
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/bootstrap/cache
+mkdir -p /var/www/html/public/storage
+
+# Set permissions
+chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
 
-# Generate app key if not set
+# Create .env if it doesn't exist
+if [ ! -f /var/www/html/.env ]; then
+    cp /var/www/html/.env.example /var/www/html/.env
+fi
+
+# Generate app key
 php artisan key:generate --no-interaction --force
 
-# Run migrations
+# Run migrations with PostgreSQL
 php artisan migrate --force
-
-# Seed database (optional – comment out if not needed)
-# php artisan db:seed --force
 
 # Clear caches
 php artisan config:clear

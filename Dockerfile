@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libpq-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -36,7 +36,7 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 # Copy .env file if it exists, otherwise create from example
 RUN if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
 
-# Install dependencies with specific options
+# Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd
 
 # Set permissions after composer install
