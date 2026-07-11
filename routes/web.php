@@ -17,6 +17,11 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
+// ─── TEST ROUTE ──────────────────────────────────────────────────────────────
+Route::get('/test-laravel', function () {
+    return 'Laravel route is working!';
+});
+
 // ─── Public ─────────────────────────────────────────────────────────────────
 Route::get('/',          [MainController::class, 'home'])->name('main.home');
 Route::get('/about',     [MainController::class, 'about'])->name('main.about');
@@ -197,7 +202,7 @@ Route::prefix('/admin')->middleware(['auth', 'admin'])->name('admin.')->group(fu
     // Reviews
     Route::get('/reviews',              [AdminController::class, 'reviews'])->name('reviews');
     Route::post('/reviews/{id}/delete', [AdminController::class, 'reviewDelete'])->name('review_delete');
-    Route::post('/reviews/{id}/approve', [AdminController::class, 'approveReview'])->name('review_approve'); // ✅ ADDED
+    Route::post('/reviews/{id}/approve', [AdminController::class, 'approveReview'])->name('review_approve');
 
     // Analytics / Audit / CMS
     Route::get('/analytics',  [AdminController::class, 'analytics'])->name('analytics');
