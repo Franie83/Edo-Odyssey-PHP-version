@@ -1,38 +1,44 @@
 #!/bin/sh
 set -e
 
-echo "=== STARTING ENTRYPOINT ===" > /var/log/entrypoint.log
-exec 1>/dev/stdout 2>/dev/stderr
+echo "=== STARTING ENTRYPOINT ==="
 
 # Create directories
-mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+mkdir -p storage/framework/cache
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/logs
+mkdir -p bootstrap/cache
 
 # Set permissions
 chmod -R 775 storage bootstrap/cache
 
-echo "=== CHECKING PHP ==="
-php -v
-
 echo "=== CHECKING COMPOSER ==="
-composer --version
+composer --version || echo "Composer not found!"
 
-echo "=== INSTALLING DEPENDENCIES ==="
-composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd -vvv
+echo "=== CHECKING VENDOR DIRECTORY ==="
+if [ -d "vendor" ]; then
+    echo "✅ Vendor directory exists"
+    ls -la vendor/ | head -10
+else
+    echo "❌ Vendor directory NOT found - installing dependencies..."
+    composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd
+fi
 
-echo "=== CHECKING VENDOR ==="
+echo "=== CHECKING LARAVEL FRAMEWORK ==="
 if [ -d "vendor/laravel/framework" ]; then
     echo "✅ Laravel framework installed!"
 else
-    echo "❌ Laravel framework NOT installed!"
-    ls -la vendor/ || echo "No vendor directory"
-    exit 1
+    echo "❌ Laravel framework NOT installed - forcing install..."
+    composer require laravel/framework --no-update
+    composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd
 fi
 
 echo "=== RUNNING MIGRATIONS ==="
-php artisan migrate --force
+php artisan migrate --force || echo "Migrations failed, continuing..."
 
 echo "=== RUNNING SEEDERS ==="
-php artisan db:seed --force
+php artisan db:seed --force || echo "Seeders failed, continuing..."
 
 echo "=== LINKING STORAGE ==="
 php artisan storage:link || true
