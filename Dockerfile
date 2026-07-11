@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -19,7 +19,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files first
+# Copy application files
 COPY . /var/www/html
 
 # Create all required directories
@@ -30,7 +30,7 @@ RUN mkdir -p /var/www/html/storage/app/public \
     /var/www/html/bootstrap/cache \
     /var/www/html/public/storage
 
-# Set permissions before composer install
+# Set permissions
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Copy .env file if it exists, otherwise create from example
@@ -47,6 +47,6 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 9000
+EXPOSE 8000
 
 ENTRYPOINT ["docker-entrypoint.sh"]

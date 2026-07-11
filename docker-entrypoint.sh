@@ -17,10 +17,10 @@ if [ ! -f /var/www/html/.env ]; then
     cp /var/www/html/.env.example /var/www/html/.env
 fi
 
-# Generate app key
+# Generate app key (only if not set)
 php artisan key:generate --no-interaction --force
 
-# Run migrations with PostgreSQL
+# Run migrations
 php artisan migrate --force
 
 # Clear caches
@@ -28,5 +28,8 @@ php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
 
-# Start PHP-FPM
-php-fpm
+# Link storage
+php artisan storage:link || true
+
+# Start Laravel development server (Render-compatible)
+php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
