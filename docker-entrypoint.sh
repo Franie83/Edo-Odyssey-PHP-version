@@ -23,13 +23,16 @@ php artisan key:generate --no-interaction --force
 # Run migrations
 php artisan migrate --force
 
-# Clear caches
+# Clear and cache config, routes, views
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 
 # Link storage
 php artisan storage:link || true
 
-# Start Laravel development server (Render-compatible)
-php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Start PHP built-in server
+php -S 0.0.0.0:${PORT:-10000} -t public
