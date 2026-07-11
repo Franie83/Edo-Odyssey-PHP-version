@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+echo "=== STARTING ENTRYPOINT ==="
+
 # Create directories
 mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
@@ -11,29 +13,51 @@ mkdir -p bootstrap/cache
 # Set permissions
 chmod -R 775 storage bootstrap/cache
 
-# Remove vendor directory to force fresh install
+echo "=== CHECKING COMPOSER ==="
+which composer || echo "Composer not found"
+composer --version || echo "Composer version check failed"
+
+echo "=== CHECKING VENDOR DIRECTORY ==="
+if [ -d "vendor" ]; then
+    echo "Vendor directory exists"
+    ls -la vendor/ | head -20
+else
+    echo "Vendor directory NOT found"
+fi
+
+echo "=== CHECKING COMPOSER.JSON ==="
+cat composer.json | grep "laravel/framework" || echo "laravel/framework not found in composer.json"
+
+echo "=== REMOVING VENDOR ==="
 rm -rf vendor
+rm -f composer.lock
 
-# Install dependencies
-echo "Installing Composer dependencies..."
-composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd
+echo "=== INSTALLING DEPENDENCIES ==="
+composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd -vvv
 
-# Run migrations
-echo "Running migrations..."
+echo "=== CHECKING VENDOR AFTER INSTALL ==="
+if [ -d "vendor/laravel/framework" ]; then
+    echo "✅ Laravel framework installed successfully!"
+    ls -la vendor/laravel/framework/
+else
+    echo "❌ Laravel framework NOT installed!"
+    ls -la vendor/ || echo "No vendor directory"
+    exit 1
+fi
+
+echo "=== RUNNING MIGRATIONS ==="
 php artisan migrate --force
 
-# Run seeders
-echo "Running seeders..."
+echo "=== RUNNING SEEDERS ==="
 php artisan db:seed --force
 
-# Link storage
+echo "=== LINKING STORAGE ==="
 php artisan storage:link || true
 
-# Clear caches
+echo "=== CLEARING CACHES ==="
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
 
-# Start server
-echo "Starting server..."
+echo "=== STARTING SERVER ==="
 php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
