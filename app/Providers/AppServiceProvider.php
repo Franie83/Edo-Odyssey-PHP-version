@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
@@ -21,19 +22,26 @@ class AppServiceProvider extends ServiceProvider
 
         // Inject CMS settings into every view
         View::composer('*', function ($view) {
-            try {
-                $settings = CmsSetting::pluck('value', 'key')->toArray();
-            } catch (\Exception $e) {
-                $settings = [];
+            $settings = [];
+            $unreadNotifs = 0;
+
+            // Check if tables exist before querying
+            if (Schema::hasTable('cms_settings')) {
+                try {
+                    $settings = CmsSetting::pluck('value', 'key')->toArray();
+                } catch (\Exception $e) {
+                    // Silent fail – settings will be empty
+                }
             }
 
-            $unreadNotifs = 0;
-            if (Auth::check()) {
+            if (Auth::check() && Schema::hasTable('notifications')) {
                 try {
                     $unreadNotifs = Notification::where('user_id', Auth::id())
                         ->where('is_read', false)
                         ->count();
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                    // Silent fail – notifications will be 0
+                }
             }
 
             $view->with('settings', $settings)
