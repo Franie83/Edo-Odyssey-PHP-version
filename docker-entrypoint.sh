@@ -1,38 +1,29 @@
 #!/bin/sh
+set -e
 
-# Create all required directories
-mkdir -p /var/www/html/storage/app/public
-mkdir -p /var/www/html/storage/framework/cache
-mkdir -p /var/www/html/storage/framework/sessions
-mkdir -p /var/www/html/storage/framework/views
-mkdir -p /var/www/html/bootstrap/cache
-mkdir -p /var/www/html/public/storage
+# Create directories
+mkdir -p storage/framework/cache
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/logs
+mkdir -p bootstrap/cache
 
 # Set permissions
-chmod -R 775 /var/www/html/storage
-chmod -R 775 /var/www/html/bootstrap/cache
-
-# Create .env if it doesn't exist
-if [ ! -f /var/www/html/.env ]; then
-    cp /var/www/html/.env.example /var/www/html/.env
-fi
-
-# Generate app key (only if not set)
-php artisan key:generate --no-interaction --force
+chmod -R 775 storage bootstrap/cache
 
 # Run migrations
 php artisan migrate --force
 
-# Clear and cache config, routes, views
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# Run seeders
+php artisan db:seed --force
 
 # Link storage
 php artisan storage:link || true
 
-# Start PHP built-in server
-php -S 0.0.0.0:${PORT:-10000} -t public
+# Clear caches (don't cache during debugging)
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+
+# Start server
+php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
