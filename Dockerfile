@@ -22,6 +22,10 @@ WORKDIR /var/www/html
 # Copy application
 COPY . /var/www/html
 
+# Create bootstrap/cache directory if it doesn't exist
+RUN mkdir -p /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/bootstrap/cache
+
 # Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 

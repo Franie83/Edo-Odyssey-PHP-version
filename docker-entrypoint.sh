@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Create bootstrap/cache directory if missing
+mkdir -p /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/bootstrap/cache
+
 # Generate app key if not set
 php artisan key:generate --no-interaction --force
 
@@ -14,4 +18,5 @@ php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
 
+# Start PHP-FPM
 php-fpm
