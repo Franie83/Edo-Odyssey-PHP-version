@@ -9,6 +9,7 @@ mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p storage/logs
 mkdir -p bootstrap/cache
+mkdir -p public/storage
 
 # Set permissions
 chmod -R 775 storage bootstrap/cache
@@ -19,10 +20,9 @@ composer --version || echo "Composer not found!"
 echo "=== CHECKING VENDOR DIRECTORY ==="
 if [ -d "vendor" ]; then
     echo "✅ Vendor directory exists"
-    ls -la vendor/ | head -10
 else
     echo "❌ Vendor directory NOT found - installing dependencies..."
-    composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd
+    composer install --no-interaction --optimize-autoloader --no-dev
 fi
 
 echo "=== CHECKING LARAVEL FRAMEWORK ==="
@@ -30,23 +30,24 @@ if [ -d "vendor/laravel/framework" ]; then
     echo "✅ Laravel framework installed!"
 else
     echo "❌ Laravel framework NOT installed - forcing install..."
-    composer require laravel/framework --no-update
-    composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd
+    composer install --no-interaction --optimize-autoloader --no-dev
 fi
+
+echo "=== GENERATING APP KEY ==="
+php artisan key:generate --no-interaction --force || echo "Key generation skipped"
 
 echo "=== RUNNING MIGRATIONS ==="
 php artisan migrate --force || echo "Migrations failed, continuing..."
-
-echo "=== RUNNING SEEDERS ==="
-php artisan db:seed --force || echo "Seeders failed, continuing..."
 
 echo "=== LINKING STORAGE ==="
 php artisan storage:link || true
 
 echo "=== CLEARING CACHES ==="
-php artisan config:clear
-php artisan cache:clear
-php artisan view:clear
+php artisan config:clear || true
+php artisan cache:clear || true
+php artisan view:clear || true
+php artisan route:clear || true
 
 echo "=== STARTING SERVER ==="
-php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+echo "Using PORT: ${PORT:-10000}"
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-10000}

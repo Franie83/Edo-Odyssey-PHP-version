@@ -17,10 +17,12 @@ class MainController extends Controller
 {
     public function home()
     {
-        // 🔧 ISOLATION TEST: Temporarily return JSON to verify Laravel is working
+        // 🔧 ISOLATION TEST: Return JSON to verify Laravel is working
         return response()->json([
             'status' => 'OK',
             'message' => 'Laravel is working on Render!',
+            'environment' => app()->environment(),
+            'database' => config('database.default'),
             'timestamp' => now()->toDateTimeString()
         ]);
 

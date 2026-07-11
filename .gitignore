@@ -21,14 +21,34 @@ Thumbs.db
 
 # Composer
 composer.phar
-composer.lock  # optional – commit this if you want version lock
+composer.lock
 
 # NPM
 package-lock.json
 yarn.lock
 
-# Docker (optional – if not needed)
+# Docker
 docker-compose.override.yml
 
 # Project specific
 /public/storage/
+
+# Debug files
+public/test.php
+public/hello.php
+public/laravel-test.php
+public/autoload-test.php
+public/bootstrap-test.php
+public/extensions-test.php
+
+# Temp files
+*.tmp
+*.temp
+operational overview.txt
+read.me
+comment
+first()
+has('is_active')
+has('is_featured')
+is_approved
+project
