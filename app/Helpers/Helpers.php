@@ -14,11 +14,37 @@ class Helpers
      */
     public static function imageUrl(?string $path, string $placeholder = 'https://via.placeholder.com/600x400?text=No+Image'): string
     {
-        if (!$path) return $placeholder;
-        if (Str::startsWith($path, ['http://', 'https://'])) return $path;
-        if (Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->url($path);
+        if (!$path) {
+            return $placeholder;
         }
+        
+        // If it's already a full URL (http or https), return as is
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+        
+        // If it's a storage path, check if it exists
+        $storagePath = $path;
+        
+        // Remove leading slashes if present
+        if (Str::startsWith($storagePath, '/')) {
+            $storagePath = substr($storagePath, 1);
+        }
+        
+        // Check if it exists in public disk
+        if (Storage::disk('public')->exists($storagePath)) {
+            return Storage::disk('public')->url($storagePath);
+        }
+        
+        // If path is like "storage/filename.jpg", convert properly
+        if (Str::startsWith($path, 'storage/')) {
+            $pathWithoutStorage = substr($path, 8);
+            if (Storage::disk('public')->exists($pathWithoutStorage)) {
+                return Storage::disk('public')->url($pathWithoutStorage);
+            }
+        }
+        
+        // Return placeholder if file doesn't exist
         return $placeholder;
     }
 
@@ -63,7 +89,9 @@ class Helpers
      */
     public static function saveUpload($file, string $folder = 'uploads'): ?string
     {
-        if (!$file || !$file->isValid()) return null;
+        if (!$file || !$file->isValid()) {
+            return null;
+        }
         return $file->store($folder, 'public');
     }
 

@@ -35,6 +35,10 @@ php artisan db:seed --force --verbose
 echo "=== Linking Storage ==="
 php artisan storage:link || true
 
+# Optimize for production
+echo "=== Optimizing Application ==="
+php artisan optimize
+
 # Start the server
 echo "=== Starting Server ==="
 php artisan serve --host=0.0.0.0 --port=10000

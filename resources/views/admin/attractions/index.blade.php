@@ -28,7 +28,7 @@
           <tr>
             <th>Name</th>
             <th>Category</th>
-            <th>User</th> {{-- ✅ New column --}}
+            <th>User</th>
             <th>Price</th>
             <th>Views</th>
             <th>Featured</th>
@@ -41,13 +41,13 @@
         <tr>
           <td>
             <div class="d-flex align-items-center gap-2">
-              <img src="{{ $a->image_url ? asset('storage/' . $a->image_url) : asset('images/placeholder.jpg') }}" 
+              <img src="{{ \App\Helpers\Helpers::imageUrl($a->image_url) }}" 
                    width="40" height="35" style="object-fit:cover;border-radius:6px" alt="{{ $a->name }}">
               <span class="fw-semibold small">{{ $a->name }}</span>
             </div>
           </td>
           <td class="small">{{ $a->category?->name ?? '—' }}</td>
-          <td class="small">{{ $a->user?->full_name ?? '—' }}</td> {{-- ✅ User column --}}
+          <td class="small">{{ $a->user?->full_name ?? '—' }}</td>
           <td class="small text-gold fw-semibold">{{ $a->ticket_price == 0 ? 'Free' : '₦'.number_format($a->ticket_price) }}</td>
           <td class="small">{{ number_format($a->views) }}</td>
           <td>@if($a->is_featured)<span class="badge bg-gold text-dark">Featured</span>@else<span class="text-muted">—</span>@endif</td>
@@ -61,7 +61,7 @@
           </td>
         </tr>
         @empty
-        <tr><td colspan="8" class="text-center py-4 text-muted">No attractions found.</td></tr> {{-- colspan updated to 8 --}}
+        <tr><td colspan="8" class="text-center py-4 text-muted">No attractions found.</td></tr>
         @endforelse
         </tbody>
       </table>
