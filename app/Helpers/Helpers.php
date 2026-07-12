@@ -37,44 +37,49 @@ class Helpers
             $cleanPath = substr($cleanPath, 8);
         }
         
-        // Check if file exists in public disk
+        // Check if file exists in public disk - use asset() for URL
         if (Storage::disk('public')->exists($cleanPath)) {
-            return Storage::disk('public')->url($cleanPath);
+            return asset('storage/' . $cleanPath);
         }
         
         // Check if file exists in 'attractions/' folder
         if (Storage::disk('public')->exists('attractions/' . $cleanPath)) {
-            return Storage::disk('public')->url('attractions/' . $cleanPath);
+            return asset('storage/attractions/' . $cleanPath);
         }
         
         // Check if file exists in 'uploads/' folder
         if (Storage::disk('public')->exists('uploads/' . $cleanPath)) {
-            return Storage::disk('public')->url('uploads/' . $cleanPath);
+            return asset('storage/uploads/' . $cleanPath);
         }
         
         // Check if file exists in 'hotels/' folder
         if (Storage::disk('public')->exists('hotels/' . $cleanPath)) {
-            return Storage::disk('public')->url('hotels/' . $cleanPath);
+            return asset('storage/hotels/' . $cleanPath);
         }
         
         // Check if file exists in 'restaurants/' folder
         if (Storage::disk('public')->exists('restaurants/' . $cleanPath)) {
-            return Storage::disk('public')->url('restaurants/' . $cleanPath);
+            return asset('storage/restaurants/' . $cleanPath);
         }
         
         // Check if file exists in 'events/' folder
         if (Storage::disk('public')->exists('events/' . $cleanPath)) {
-            return Storage::disk('public')->url('events/' . $cleanPath);
+            return asset('storage/events/' . $cleanPath);
         }
         
         // Check if file exists in 'partners/' folder
         if (Storage::disk('public')->exists('partners/' . $cleanPath)) {
-            return Storage::disk('public')->url('partners/' . $cleanPath);
+            return asset('storage/partners/' . $cleanPath);
         }
         
         // Check if file exists in 'avatars/' folder
         if (Storage::disk('public')->exists('avatars/' . $cleanPath)) {
-            return Storage::disk('public')->url('avatars/' . $cleanPath);
+            return asset('storage/avatars/' . $cleanPath);
+        }
+        
+        // If the path starts with 'attractions/' but doesn't exist, try to show it anyway
+        if (Str::startsWith($path, 'attractions/')) {
+            return asset('storage/' . $path);
         }
         
         // Return placeholder if file doesn't exist
