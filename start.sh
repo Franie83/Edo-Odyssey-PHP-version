@@ -23,9 +23,9 @@ php artisan route:clear
 echo "=== Generating App Key ==="
 php artisan key:generate --no-interaction --force
 
-# Run migrations with verbose output
-echo "=== Running Migrations ==="
-php artisan migrate --force --verbose
+# Run migrations fresh (drops all tables and recreates)
+echo "=== Running Fresh Migrations ==="
+php artisan migrate:fresh --force --verbose
 
 # Run seeders
 echo "=== Running Seeders ==="
