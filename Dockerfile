@@ -40,19 +40,10 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Create .env from .env.example if not exists
-RUN if [ ! -f /var/www/html/.env ]; then cp /var/www/html/.env.example /var/www/html/.env; fi
-
-# Generate app key
-RUN php artisan key:generate --no-interaction --force
-
-# Run migrations
-RUN php artisan migrate --force || true
+# Copy startup script
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
 EXPOSE 10000
 
-CMD php artisan config:clear && \
-    php artisan cache:clear && \
-    php artisan view:clear && \
-    php artisan route:clear && \
-    php artisan serve --host=0.0.0.0 --port=10000
+CMD ["/usr/local/bin/start.sh"]
