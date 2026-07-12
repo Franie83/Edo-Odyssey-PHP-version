@@ -27,6 +27,10 @@ php artisan key:generate --no-interaction --force
 echo "=== Running Migrations ==="
 php artisan migrate --force --verbose
 
+# Run seeders
+echo "=== Running Seeders ==="
+php artisan db:seed --force --verbose
+
 # Link storage
 echo "=== Linking Storage ==="
 php artisan storage:link || true
