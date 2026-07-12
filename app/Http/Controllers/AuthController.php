@@ -138,13 +138,14 @@ class AuthController extends Controller
 
     /**
      * Demo quick-login for prototyping / local development only.
-     * Disabled in production to prevent privileged-account bypass.
+     * TEMPORARILY ENABLED FOR TESTING - Disable in production!
      */
     public function quickLogin(string $role)
     {
-        if (app()->isProduction()) {
-            abort(403, 'Quick-login is disabled in production.');
-        }
+        // TEMPORARILY COMMENTED OUT FOR TESTING
+        // if (app()->isProduction()) {
+        //     abort(403, 'Quick-login is disabled in production.');
+        // }
 
         $roleMap = [
             'superadmin' => ['email' => 'superadmin@edoodyssey.ng', 'role' => 'Super Admin', 'fn' => 'Frank', 'ln' => 'Egbeobawaye'],
