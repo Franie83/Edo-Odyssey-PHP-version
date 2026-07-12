@@ -19,14 +19,16 @@ php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
 
-# Run migrations
-echo "=== Running Migrations ==="
-php artisan migrate --force
-
 # Generate app key if not set
+echo "=== Generating App Key ==="
 php artisan key:generate --no-interaction --force
 
+# Run migrations with verbose output
+echo "=== Running Migrations ==="
+php artisan migrate --force --verbose
+
 # Link storage
+echo "=== Linking Storage ==="
 php artisan storage:link || true
 
 # Start the server
