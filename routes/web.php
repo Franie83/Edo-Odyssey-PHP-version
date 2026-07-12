@@ -67,6 +67,9 @@ Route::get('/debug-dashboard', function () {
     }
 });
 
+// ─── TEST DASHBOARD ROUTE ────────────────────────────────────────────────────
+Route::get('/dashboard-test', [DashboardController::class, 'test'])->name('dashboard.test')->middleware('auth');
+
 // ─── Public ─────────────────────────────────────────────────────────────────
 Route::get('/',          [MainController::class, 'home'])->name('main.home');
 Route::get('/about',     [MainController::class, 'about'])->name('main.about');

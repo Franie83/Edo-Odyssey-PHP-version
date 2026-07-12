@@ -96,6 +96,34 @@ class DashboardController extends Controller
         }
     }
 
+    // ─── TEST DASHBOARD METHOD ──────────────────────────────────────────────
+    public function test()
+    {
+        try {
+            $user = Auth::user();
+            $bookings = Booking::where('user_id', $user->id)->get();
+            $notifications = Notification::where('user_id', $user->id)->limit(10)->get();
+            $reviews = Review::where('user_id', $user->id)->get();
+            
+            $stats = [
+                'total_bookings' => $bookings->count(),
+                'pending_bookings' => $bookings->where('booking_status', 'Pending')->count(),
+                'completed_bookings' => $bookings->where('booking_status', 'Completed')->count(),
+                'total_reviews' => $reviews->count(),
+                'heritage_points' => $user->heritage_points ?? 0,
+            ];
+            
+            return view('dashboard.test', compact('bookings', 'notifications', 'reviews', 'stats'));
+        } catch (\Exception $e) {
+            Log::error('Test dashboard error: ' . $e->getMessage());
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
+    }
+
     public function profile()
     {
         return view('dashboard.profile', ['user' => Auth::user()->load('guide')]);
