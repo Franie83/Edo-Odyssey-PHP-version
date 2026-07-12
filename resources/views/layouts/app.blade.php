@@ -279,7 +279,7 @@
           <div class="avatar-initials-sm">{{ Auth::user()->first_name[0] }}{{ Auth::user()->last_name[0] }}</div>
           @endif
           <span class="d-none d-lg-inline">{{ Auth::user()->first_name }}</span>
-          @if($unread_notifs > 0)
+          @if(isset($unread_notifs) && $unread_notifs > 0)
           <span class="badge bg-danger rounded-pill">{{ $unread_notifs }}</span>
           @endif
         </button>
@@ -336,7 +336,7 @@
               <div class="brand-subtitle" style="font-size:0.65rem">Official Tourism Platform</div>
             </div>
           </div>
-          <p class="text-white-50 small">{{ Str::limit($settings['about_agency'] ?? 'Discover the rich cultural heritage of Edo State.', 200) }}</p>
+          <p class="text-white-50 small">{{ isset($settings['about_agency']) ? Str::limit($settings['about_agency'], 200) : 'Discover the rich cultural heritage of Edo State.' }}</p>
           <div class="d-flex gap-3 mt-3">
             <a href="#" class="text-gold fs-5 transition-hover"><i class="bi bi-facebook"></i></a>
             <a href="#" class="text-gold fs-5 transition-hover"><i class="bi bi-twitter-x"></i></a>
