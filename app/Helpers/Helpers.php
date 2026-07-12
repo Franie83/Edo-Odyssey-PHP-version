@@ -14,7 +14,8 @@ class Helpers
      */
     public static function imageUrl(?string $path, string $placeholder = 'https://via.placeholder.com/600x400?text=No+Image'): string
     {
-        if (!$path) {
+        // If no path, return placeholder
+        if (empty($path)) {
             return $placeholder;
         }
         
@@ -23,25 +24,57 @@ class Helpers
             return $path;
         }
         
-        // If it's a storage path, check if it exists
-        $storagePath = $path;
+        // Clean the path
+        $cleanPath = $path;
         
-        // Remove leading slashes if present
-        if (Str::startsWith($storagePath, '/')) {
-            $storagePath = substr($storagePath, 1);
+        // Remove leading slashes
+        if (Str::startsWith($cleanPath, '/')) {
+            $cleanPath = substr($cleanPath, 1);
         }
         
-        // Check if it exists in public disk
-        if (Storage::disk('public')->exists($storagePath)) {
-            return Storage::disk('public')->url($storagePath);
+        // Remove 'storage/' prefix if present
+        if (Str::startsWith($cleanPath, 'storage/')) {
+            $cleanPath = substr($cleanPath, 8);
         }
         
-        // If path is like "storage/filename.jpg", convert properly
-        if (Str::startsWith($path, 'storage/')) {
-            $pathWithoutStorage = substr($path, 8);
-            if (Storage::disk('public')->exists($pathWithoutStorage)) {
-                return Storage::disk('public')->url($pathWithoutStorage);
-            }
+        // Check if file exists in public disk
+        if (Storage::disk('public')->exists($cleanPath)) {
+            return Storage::disk('public')->url($cleanPath);
+        }
+        
+        // Check if file exists in 'attractions/' folder
+        if (Storage::disk('public')->exists('attractions/' . $cleanPath)) {
+            return Storage::disk('public')->url('attractions/' . $cleanPath);
+        }
+        
+        // Check if file exists in 'uploads/' folder
+        if (Storage::disk('public')->exists('uploads/' . $cleanPath)) {
+            return Storage::disk('public')->url('uploads/' . $cleanPath);
+        }
+        
+        // Check if file exists in 'hotels/' folder
+        if (Storage::disk('public')->exists('hotels/' . $cleanPath)) {
+            return Storage::disk('public')->url('hotels/' . $cleanPath);
+        }
+        
+        // Check if file exists in 'restaurants/' folder
+        if (Storage::disk('public')->exists('restaurants/' . $cleanPath)) {
+            return Storage::disk('public')->url('restaurants/' . $cleanPath);
+        }
+        
+        // Check if file exists in 'events/' folder
+        if (Storage::disk('public')->exists('events/' . $cleanPath)) {
+            return Storage::disk('public')->url('events/' . $cleanPath);
+        }
+        
+        // Check if file exists in 'partners/' folder
+        if (Storage::disk('public')->exists('partners/' . $cleanPath)) {
+            return Storage::disk('public')->url('partners/' . $cleanPath);
+        }
+        
+        // Check if file exists in 'avatars/' folder
+        if (Storage::disk('public')->exists('avatars/' . $cleanPath)) {
+            return Storage::disk('public')->url('avatars/' . $cleanPath);
         }
         
         // Return placeholder if file doesn't exist
@@ -92,7 +125,9 @@ class Helpers
         if (!$file || !$file->isValid()) {
             return null;
         }
-        return $file->store($folder, 'public');
+        // Store in the specified folder within 'public' disk
+        $path = $file->store($folder, 'public');
+        return $path;
     }
 
     /**
