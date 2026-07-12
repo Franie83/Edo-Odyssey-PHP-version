@@ -18,6 +18,16 @@ use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 // ─── TEST ROUTE ──────────────────────────────────────────────────────────────
+Route::get('/test', function () {
+    return response()->json([
+        'status' => 'OK',
+        'message' => 'Laravel is working!',
+        'environment' => app()->environment(),
+        'database' => config('database.default'),
+        'timestamp' => now()->toDateTimeString()
+    ]);
+});
+
 Route::get('/test-laravel', function () {
     return 'Laravel route is working!';
 });

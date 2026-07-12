@@ -17,16 +17,6 @@ class MainController extends Controller
 {
     public function home()
     {
-        // 🔧 ISOLATION TEST: Return JSON to verify Laravel is working
-        return response()->json([
-            'status' => 'OK',
-            'message' => 'Laravel is working on Render!',
-            'environment' => app()->environment(),
-            'database' => config('database.default'),
-            'timestamp' => now()->toDateTimeString()
-        ]);
-
-        /* // Restore this when testing is complete
         // Wrap each query in try/catch to isolate issues
         try {
             $categories = Category::where('is_active', true)->orderBy('sort_order')->get();
@@ -131,7 +121,6 @@ class MainController extends Controller
             'total_guides'        => $total_guides,
             'total_hotels'        => $total_hotels,
         ]);
-        */
     }
 
     public function about()

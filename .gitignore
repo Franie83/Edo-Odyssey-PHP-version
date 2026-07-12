@@ -27,8 +27,11 @@ composer.lock
 package-lock.json
 yarn.lock
 
-# Docker
-docker-compose.override.yml
+# Docker files (keep these for Render)
+# Dockerfile
+# docker-compose.yml
+# docker-entrypoint.sh
+# .dockerignore
 
 # Project specific
 /public/storage/
@@ -52,3 +55,6 @@ has('is_active')
 has('is_featured')
 is_approved
 project
+
+# SQLite database (don't commit)
+database/database.sqlite

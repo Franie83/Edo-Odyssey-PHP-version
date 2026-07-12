@@ -26,22 +26,22 @@ class AppServiceProvider extends ServiceProvider
             $unreadNotifs = 0;
 
             // Check if tables exist before querying
-            if (Schema::hasTable('cms_settings')) {
-                try {
+            try {
+                if (Schema::hasTable('cms_settings')) {
                     $settings = CmsSetting::pluck('value', 'key')->toArray();
-                } catch (\Exception $e) {
-                    // Silent fail – settings will be empty
                 }
+            } catch (\Exception $e) {
+                // Silent fail – settings will be empty
             }
 
-            if (Auth::check() && Schema::hasTable('notifications')) {
-                try {
+            try {
+                if (Auth::check() && Schema::hasTable('notifications')) {
                     $unreadNotifs = Notification::where('user_id', Auth::id())
                         ->where('is_read', false)
                         ->count();
-                } catch (\Exception $e) {
-                    // Silent fail – notifications will be 0
                 }
+            } catch (\Exception $e) {
+                // Silent fail – notifications will be 0
             }
 
             $view->with('settings', $settings)

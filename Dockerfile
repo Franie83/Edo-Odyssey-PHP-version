@@ -11,7 +11,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libpq-dev \
-    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip
+    sqlite3 \
+    libsqlite3-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -22,7 +24,7 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . /var/www/html
 
-# Create all required directories
+# Create required directories
 RUN mkdir -p /var/www/html/storage/app/public \
     /var/www/html/storage/framework/cache \
     /var/www/html/storage/framework/sessions \
@@ -33,20 +35,13 @@ RUN mkdir -p /var/www/html/storage/app/public \
 # Set permissions
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copy .env file if it exists, otherwise create from example
-RUN if [ -f .env.example ] && [ ! -f .env ]; then cp .env.example .env; fi
-
 # Install dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev --ignore-platform-req=ext-gd
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Set permissions after composer install
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copy entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+EXPOSE 10000
 
-EXPOSE 8000
-
-ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
