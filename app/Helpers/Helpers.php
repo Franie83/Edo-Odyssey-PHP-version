@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Cloudinary\Cloudinary;
 
 class Helpers
 {
@@ -123,16 +124,44 @@ class Helpers
     }
 
     /**
-     * Handle file upload and return relative path.
+     * Handle file upload and return path.
+     * Uploads to Cloudinary if configured, otherwise falls back to local storage.
      */
     public static function saveUpload($file, string $folder = 'uploads'): ?string
     {
         if (!$file || !$file->isValid()) {
             return null;
         }
-        // Store in the specified folder within 'public' disk
-        $path = $file->store($folder, 'public');
-        return $path;
+        
+        // Check if Cloudinary is configured
+        $cloudName = env('CLOUDINARY_CLOUD_NAME');
+        $apiKey = env('CLOUDINARY_API_KEY');
+        $apiSecret = env('CLOUDINARY_API_SECRET');
+        
+        if ($cloudName && $apiKey && $apiSecret) {
+            try {
+                $cloudinary = new Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => $cloudName,
+                        'api_key' => $apiKey,
+                        'api_secret' => $apiSecret,
+                    ],
+                ]);
+                
+                $upload = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                    'folder' => 'edoodyssey/' . $folder,
+                    'public_id' => time() . '_' . Str::random(10),
+                ]);
+                
+                return $upload['secure_url'];
+            } catch (\Exception $e) {
+                // Fallback to local storage if Cloudinary fails
+                return $file->store($folder, 'public');
+            }
+        }
+        
+        // Fallback to local storage
+        return $file->store($folder, 'public');
     }
 
     /**
