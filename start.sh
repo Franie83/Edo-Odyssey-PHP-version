@@ -13,11 +13,13 @@ mkdir -p /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
 
-# Clear caches
+# Clear all caches aggressively
+echo "=== Clearing all caches ==="
 php artisan config:clear
 php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
+php artisan clear-compiled
 
 # Generate app key if not set
 echo "=== Generating App Key ==="
@@ -48,6 +50,6 @@ chmod -R 775 /var/www/html/public/storage
 echo "=== Optimizing Application ==="
 php artisan optimize
 
-# Start the server
+# Restart the server
 echo "=== Starting Server ==="
 php artisan serve --host=0.0.0.0 --port=10000
