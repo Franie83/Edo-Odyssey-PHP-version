@@ -18,7 +18,7 @@
               </select>
             </div>
 
-            {{-- ✅ New row for Assigned User --}}
+            {{-- Assigned User --}}
             <div class="col-md-6">
               <label class="form-label fw-semibold small">Assigned User *</label>
               <select name="user_id" class="form-select" required>
@@ -41,7 +41,26 @@
             <div class="col-md-6"><label class="form-label fw-semibold small">Website</label><input type="url" name="website" class="form-control" value="{{ old('website', $attraction->website) }}"></div>
             <div class="col-md-3"><label class="form-label fw-semibold small">Latitude</label><input type="number" name="latitude" class="form-control" step="any" value="{{ old('latitude', $attraction->latitude) }}"></div>
             <div class="col-md-3"><label class="form-label fw-semibold small">Longitude</label><input type="number" name="longitude" class="form-control" step="any" value="{{ old('longitude', $attraction->longitude) }}"></div>
-            <div class="col-md-6"><label class="form-label fw-semibold small">Main Image</label><input type="file" name="image" class="form-control" accept="image/*">@if($attraction->image_url)<small class="text-muted">Current: <a href="{{ \App\Helpers\Helpers::imageUrl($attraction->image_url) }}" target="_blank">View</a></small>@endif</div>
+            
+            {{-- Image Upload Field --}}
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Upload Image</label>
+              <input type="file" name="image" class="form-control" accept="image/*">
+              <small class="text-muted">Upload a new image file</small>
+              @if($attraction->image_url)
+                <div class="mt-1">
+                  <small class="text-muted">Current: <a href="{{ \App\Helpers\Helpers::imageUrl($attraction->image_url) }}" target="_blank">View Image</a></small>
+                </div>
+              @endif
+            </div>
+            
+            {{-- Image URL Field --}}
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Image URL</label>
+              <input type="url" name="image_url" class="form-control" placeholder="https://example.com/image.jpg" value="{{ old('image_url', $attraction->image_url ?? '') }}">
+              <small class="text-muted">Or paste an image URL (e.g., from Unsplash)</small>
+            </div>
+            
             <div class="col-md-3"><div class="form-check mt-4"><input class="form-check-input" type="checkbox" name="is_featured" id="is_featured" {{ old('is_featured', $attraction->is_featured)?'checked':'' }}><label class="form-check-label" for="is_featured">Featured</label></div></div>
             <div class="col-md-3"><div class="form-check mt-4"><input class="form-check-input" type="checkbox" name="is_active" id="is_active" {{ old('is_active', $attraction->is_active ?? true)?'checked':'' }}><label class="form-check-label" for="is_active">Active</label></div></div>
           </div>
