@@ -14,34 +14,86 @@ use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $user = Auth::user()->load('guide');
+        try {
+            $user = Auth::user()->load('guide');
 
-        $bookings = Booking::where('user_id', $user->id)
-                            ->orWhere(function ($q) use ($user) {
-                                if ($user->role === 'Guide' && $user->guide) {
-                                    $q->where('booking_type', 'Guide')->where('target_id', $user->guide->id);
-                                }
-                            })
-                            ->orderByDesc('created_at')
-                            ->get();
+            // Bookings query with error handling
+            try {
+                $bookings = Booking::where('user_id', $user->id)
+                                    ->orWhere(function ($q) use ($user) {
+                                        if ($user->role === 'Guide' && $user->guide) {
+                                            $q->where('booking_type', 'Guide')->where('target_id', $user->guide->id);
+                                        }
+                                    })
+                                    ->orderByDesc('created_at')
+                                    ->get();
+            } catch (\Exception $e) {
+                Log::error('Bookings query failed: ' . $e->getMessage());
+                $bookings = collect();
+            }
 
-        $stats = [
-            'total_bookings'    => $bookings->count(),
-            'pending_bookings'  => $bookings->where('booking_status', 'Pending')->count(),
-            'completed_bookings'=> $bookings->where('booking_status', 'Completed')->count(),
-            'total_reviews'     => Review::where('user_id', $user->id)->count(),
-            'heritage_points'   => $user->heritage_points,
-        ];
+            // Stats
+            try {
+                $stats = [
+                    'total_bookings'    => $bookings->count(),
+                    'pending_bookings'  => $bookings->where('booking_status', 'Pending')->count(),
+                    'completed_bookings'=> $bookings->where('booking_status', 'Completed')->count(),
+                    'total_reviews'     => Review::where('user_id', $user->id)->count(),
+                    'heritage_points'   => $user->heritage_points ?? 0,
+                ];
+            } catch (\Exception $e) {
+                Log::error('Stats query failed: ' . $e->getMessage());
+                $stats = [
+                    'total_bookings' => 0,
+                    'pending_bookings' => 0,
+                    'completed_bookings' => 0,
+                    'total_reviews' => 0,
+                    'heritage_points' => 0,
+                ];
+            }
 
-        $notifications = Notification::where('user_id', $user->id)->orderByDesc('created_at')->limit(10)->get();
-        $reviews       = Review::where('user_id', $user->id)->orderByDesc('created_at')->limit(10)->get();
+            // Notifications
+            try {
+                $notifications = Notification::where('user_id', $user->id)->orderByDesc('created_at')->limit(10)->get();
+            } catch (\Exception $e) {
+                Log::error('Notifications query failed: ' . $e->getMessage());
+                $notifications = collect();
+            }
 
-        return view('dashboard.index', compact('bookings', 'stats', 'notifications', 'reviews') + ['guide_profile' => $user->guide]);
+            // Reviews
+            try {
+                $reviews = Review::where('user_id', $user->id)->orderByDesc('created_at')->limit(10)->get();
+            } catch (\Exception $e) {
+                Log::error('Reviews query failed: ' . $e->getMessage());
+                $reviews = collect();
+            }
+
+            $guide_profile = $user->guide ?? null;
+
+            return view('dashboard.index', compact('bookings', 'stats', 'notifications', 'reviews', 'guide_profile'));
+        } catch (\Exception $e) {
+            Log::error('Dashboard index error: ' . $e->getMessage());
+            
+            return view('dashboard.index', [
+                'bookings' => collect(),
+                'stats' => [
+                    'total_bookings' => 0,
+                    'pending_bookings' => 0,
+                    'completed_bookings' => 0,
+                    'total_reviews' => 0,
+                    'heritage_points' => 0,
+                ],
+                'notifications' => collect(),
+                'reviews' => collect(),
+                'guide_profile' => null,
+            ]);
+        }
     }
 
     public function profile()
