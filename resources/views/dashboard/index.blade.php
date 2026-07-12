@@ -28,9 +28,9 @@
       <div class="stat-card">
         <div class="d-flex align-items-center justify-content-between mb-2">
           <div class="stat-icon bg-blue-100"><i class="bi bi-calendar-check text-blue"></i></div>
-          <span class="badge bg-blue-100 text-blue">{{ $stats['pending_bookings'] }} pending</span>
+          <span class="badge bg-blue-100 text-blue">{{ $stats['pending_bookings'] ?? 0 }} pending</span>
         </div>
-        <div class="stat-number">{{ $stats['total_bookings'] }}</div>
+        <div class="stat-number">{{ $stats['total_bookings'] ?? 0 }}</div>
         <div class="small text-muted">Total Bookings</div>
       </div>
     </div>
@@ -39,7 +39,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2">
           <div class="stat-icon bg-gold-100"><i class="bi bi-check-circle text-gold"></i></div>
         </div>
-        <div class="stat-number">{{ $stats['completed_bookings'] }}</div>
+        <div class="stat-number">{{ $stats['completed_bookings'] ?? 0 }}</div>
         <div class="small text-muted">Completed Trips</div>
       </div>
     </div>
@@ -48,7 +48,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2">
           <div class="stat-icon" style="background:#e8f5e9"><i class="bi bi-star text-success"></i></div>
         </div>
-        <div class="stat-number">{{ $stats['total_reviews'] }}</div>
+        <div class="stat-number">{{ $stats['total_reviews'] ?? 0 }}</div>
         <div class="small text-muted">Reviews Given</div>
       </div>
     </div>
@@ -57,7 +57,7 @@
         <div class="d-flex align-items-center justify-content-between mb-2">
           <div class="stat-icon bg-gold-100"><i class="bi bi-trophy text-gold"></i></div>
         </div>
-        <div class="stat-number">{{ $stats['heritage_points'] }}</div>
+        <div class="stat-number">{{ $stats['heritage_points'] ?? 0 }}</div>
         <div class="small text-muted">Heritage Points</div>
       </div>
     </div>
@@ -72,18 +72,18 @@
           <a href="{{ route('attractions.list_attractions') }}" class="btn btn-gold btn-sm"><i class="bi bi-plus me-1"></i>New Booking</a>
         </div>
         <div class="card-body p-0">
-          @if($bookings->count())
+          @if(isset($bookings) && $bookings->count())
           <div class="table-responsive">
             <table class="table table-hover mb-0 admin-table">
               <thead><tr><th>Ref</th><th>Type</th><th>Target</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
               @foreach($bookings as $b)
               <tr>
-                <td><code class="text-blue">{{ $b->reference_code }}</code></td>
-                <td><span class="badge bg-blue-100 text-blue">{{ $b->booking_type }}</span></td>
+                <td><code class="text-blue">{{ $b->reference_code ?? 'N/A' }}</code></td>
+                <td><span class="badge bg-blue-100 text-blue">{{ $b->booking_type ?? 'N/A' }}</span></td>
                 <td class="small">{{ $b->target_name ?? '—' }}</td>
-                <td class="small">{{ $b->start_date?->format('d M Y') }}</td>
-                <td class="fw-semibold text-gold">₦{{ number_format($b->total_price) }}</td>
+                <td class="small">{{ $b->start_date?->format('d M Y') ?? '—' }}</td>
+                <td class="fw-semibold text-gold">₦{{ number_format($b->total_price ?? 0) }}</td>
                 <td>
                   @php
                     $statusColors = [
@@ -95,17 +95,17 @@
                       'Completed'      => 'secondary',
                       'Cancelled'      => 'secondary',
                     ];
-                    $color = $statusColors[$b->booking_status] ?? 'secondary';
+                    $color = $statusColors[$b->booking_status ?? ''] ?? 'secondary';
                   @endphp
-                  <span class="badge bg-{{ $color }}">{{ $b->booking_status }}</span>
+                  <span class="badge bg-{{ $color }}">{{ $b->booking_status ?? 'N/A' }}</span>
                 </td>
                 <td>
-                  @if($b->booking_status === 'Pending' && $b->user_id == Auth::id())
+                  @if(isset($b->booking_status) && $b->booking_status === 'Pending' && $b->user_id == Auth::id())
                     <form method="POST" action="{{ route('bookings.cancel_booking', $b->id) }}" class="d-inline">
                       @csrf
                       <button class="btn btn-outline-danger btn-sm py-0" onclick="return confirm('Cancel this booking?')">Cancel</button>
                     </form>
-                  @elseif($b->booking_status === 'AdminApproved' && $b->isVendor())
+                  @elseif(isset($b->booking_status) && $b->booking_status === 'AdminApproved' && method_exists($b, 'isVendor') && $b->isVendor())
                     <div class="d-flex flex-column gap-1">
                       <form method="POST" action="{{ route('bookings.target_confirm_booking', $b->id) }}" class="d-inline">
                         @csrf
@@ -177,26 +177,30 @@
       <!-- Notifications -->
       <div class="sidebar-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6>Notifications <span class="badge bg-danger ms-1">{{ $notifications->where('is_read', false)->count() }}</span></h6>
-          @if($notifications->where('is_read', false)->count() > 0)
+          <h6>Notifications <span class="badge bg-danger ms-1">{{ isset($notifications) ? $notifications->where('is_read', false)->count() : 0 }}</span></h6>
+          @if(isset($notifications) && $notifications->where('is_read', false)->count() > 0)
           <form method="POST" action="{{ route('dashboard.mark_all_read') }}">
             @csrf
             <button class="btn btn-link btn-sm p-0 text-muted small">Mark all read</button>
           </form>
           @endif
         </div>
-        @forelse($notifications->take(6) as $n)
-        <div class="d-flex gap-2 mb-2 p-2 rounded {{ !$n->is_read ? 'bg-blue-100' : '' }}">
-          <i class="bi bi-bell{{ !$n->is_read ? '-fill text-gold' : ' text-muted' }} flex-shrink-0 mt-1"></i>
-          <div>
-            <div class="small fw-semibold">{{ $n->title }}</div>
-            <div class="text-muted" style="font-size:.75rem">{{ Str::limit($n->message, 80) }}</div>
-            <div class="text-muted" style="font-size:.65rem">{{ $n->created_at?->format('d M Y H:i') }}</div>
+        @if(isset($notifications) && $notifications->count() > 0)
+          @forelse($notifications->take(6) as $n)
+          <div class="d-flex gap-2 mb-2 p-2 rounded {{ !$n->is_read ? 'bg-blue-100' : '' }}">
+            <i class="bi bi-bell{{ !$n->is_read ? '-fill text-gold' : ' text-muted' }} flex-shrink-0 mt-1"></i>
+            <div>
+              <div class="small fw-semibold">{{ $n->title }}</div>
+              <div class="text-muted" style="font-size:.75rem">{{ Str::limit($n->message, 80) }}</div>
+              <div class="text-muted" style="font-size:.65rem">{{ $n->created_at?->format('d M Y H:i') }}</div>
+            </div>
           </div>
-        </div>
-        @empty
-        <p class="text-muted small mb-0">No notifications.</p>
-        @endforelse
+          @empty
+          <p class="text-muted small mb-0">No notifications.</p>
+          @endforelse
+        @else
+          <p class="text-muted small mb-0">No notifications.</p>
+        @endif
       </div>
 
       <!-- My Offerings -->
