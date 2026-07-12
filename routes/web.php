@@ -16,6 +16,9 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Booking;
+use App\Models\Notification;
+use App\Models\Review;
 
 // ─── TEST ROUTE ──────────────────────────────────────────────────────────────
 Route::get('/test', function () {
@@ -30,6 +33,38 @@ Route::get('/test', function () {
 
 Route::get('/test-laravel', function () {
     return 'Laravel route is working!';
+});
+
+// ─── DEBUG ROUTE ─────────────────────────────────────────────────────────────
+Route::get('/debug-dashboard', function () {
+    try {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'Not logged in'], 401);
+        }
+        
+        $data = [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->first_name,
+                'email' => $user->email,
+                'role' => $user->role,
+            ],
+            'guide_exists' => $user->guide ? true : false,
+            'bookings_count' => Booking::where('user_id', $user->id)->count(),
+            'notifications_count' => Notification::where('user_id', $user->id)->count(),
+            'reviews_count' => Review::where('user_id', $user->id)->count(),
+        ];
+        
+        return response()->json($data);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
 });
 
 // ─── Public ─────────────────────────────────────────────────────────────────
