@@ -26,8 +26,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Carbon\Carbon; // ✅ added for date handling
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -134,7 +135,9 @@ class AdminController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:255',
             'description'   => 'nullable|string',
+            'history'       => 'nullable|string',
             'address'       => 'nullable|string|max:255',
+            'city'          => 'nullable|string|max:100',
             'category_id'   => 'nullable|exists:categories,id',
             'ticket_price'  => 'nullable|numeric',
             'latitude'      => 'nullable|numeric',
@@ -143,14 +146,32 @@ class AdminController extends Controller
             'website'       => 'nullable|url',
             'phone'         => 'nullable|string|max:50',
             'user_id'       => 'required|exists:users,id',
+            'image_url'     => 'nullable|url',
         ]);
+        
         $data['is_featured'] = $request->has('is_featured');
         $data['is_active']   = $request->has('is_active');
-        if ($request->hasFile('image')) $data['image_url'] = Helpers::saveUpload($request->file('image'), 'attractions');
+        
+        // Handle image - prioritize file upload over URL
+        try {
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $uploadedPath = Helpers::saveUpload($request->file('image'), 'attractions');
+                if ($uploadedPath) {
+                    $data['image_url'] = $uploadedPath;
+                    Log::info('Image uploaded successfully: ' . $uploadedPath);
+                }
+            } elseif ($request->filled('image_url')) {
+                $data['image_url'] = $request->input('image_url');
+                Log::info('Image URL set: ' . $data['image_url']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Image upload failed: ' . $e->getMessage());
+        }
+        
         $attr = Attraction::create($data);
         QrCode::generateForEntity('Attraction', $attr->id);
         Helpers::logAction('admin_create_attraction', 'Attraction', $attr->id);
-        return redirect()->route('admin.attractions')->with('success', 'Attraction created.');
+        return redirect()->route('admin.attractions')->with('success', 'Attraction created successfully.');
     }
 
     public function attractionEdit(int $id)
@@ -165,10 +186,13 @@ class AdminController extends Controller
     public function attractionUpdate(Request $request, int $id)
     {
         $attr = Attraction::findOrFail($id);
+        
         $data = $request->validate([
             'name'          => 'required|string|max:255',
             'description'   => 'nullable|string',
+            'history'       => 'nullable|string',
             'address'       => 'nullable|string|max:255',
+            'city'          => 'nullable|string|max:100',
             'category_id'   => 'nullable|exists:categories,id',
             'ticket_price'  => 'nullable|numeric',
             'latitude'      => 'nullable|numeric',
@@ -177,13 +201,32 @@ class AdminController extends Controller
             'website'       => 'nullable|url',
             'phone'         => 'nullable|string|max:50',
             'user_id'       => 'required|exists:users,id',
+            'image_url'     => 'nullable|url',
         ]);
+        
         $data['is_featured'] = $request->has('is_featured');
         $data['is_active']   = $request->has('is_active');
-        if ($request->hasFile('image')) $data['image_url'] = Helpers::saveUpload($request->file('image'), 'attractions');
+        
+        // Handle image - prioritize file upload over URL
+        try {
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $uploadedPath = Helpers::saveUpload($request->file('image'), 'attractions');
+                if ($uploadedPath) {
+                    $data['image_url'] = $uploadedPath;
+                    Log::info('Image uploaded successfully: ' . $uploadedPath);
+                }
+            } elseif ($request->filled('image_url')) {
+                $data['image_url'] = $request->input('image_url');
+                Log::info('Image URL set: ' . $data['image_url']);
+            }
+            // If neither, keep existing image_url (not overwritten)
+        } catch (\Exception $e) {
+            Log::error('Image upload failed: ' . $e->getMessage());
+        }
+        
         $attr->update($data);
         Helpers::logAction('admin_update_attraction', 'Attraction', $id);
-        return redirect()->route('admin.attractions')->with('success', 'Attraction updated.');
+        return redirect()->route('admin.attractions')->with('success', 'Attraction updated successfully.');
     }
 
     public function attractionDelete(int $id)
