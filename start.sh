@@ -35,6 +35,15 @@ php artisan db:seed --force --verbose
 echo "=== Linking Storage ==="
 php artisan storage:link || true
 
+# Create storage symlink for public access (alternative method)
+echo "=== Creating storage symlink ==="
+ln -sf /var/www/html/storage/app/public /var/www/html/public/storage || true
+
+# Set proper permissions for uploaded files
+echo "=== Setting storage permissions ==="
+chmod -R 775 /var/www/html/storage/app/public
+chmod -R 775 /var/www/html/public/storage
+
 # Optimize for production
 echo "=== Optimizing Application ==="
 php artisan optimize
