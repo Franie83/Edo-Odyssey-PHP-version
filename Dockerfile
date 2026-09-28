@@ -1,9 +1,11 @@
-FROM php:8.4-cli
+FROM php:8.4-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    nginx \
+    supervisor \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
@@ -11,7 +13,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libpq-dev \
-    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip
+    libicu-dev \
+    && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip intl \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -31,14 +35,17 @@ RUN mkdir -p /var/www/html/storage/app/public \
     /var/www/html/public/storage
 
 # Set permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install dependencies
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Set permissions after composer install
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Copy Nginx config
+COPY docker/nginx.conf /etc/nginx/sites-available/default
+
+# Copy Supervisor config
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy startup script
 COPY start.sh /usr/local/bin/start.sh
