@@ -12,11 +12,13 @@ mkdir -p /var/www/html/storage/framework/sessions
 mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/bootstrap/cache
 
+chown -R www-data:www-data /var/www/html/storage
+chown -R www-data:www-data /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
 
 # ------------------------------------------------------------
-# Parse DATABASE_URL into DB_* variables
+# Parse DATABASE_URL
 # ------------------------------------------------------------
 if [ -n "$DATABASE_URL" ]; then
     echo "=== Parsing DATABASE_URL ==="
@@ -36,7 +38,7 @@ if [ -n "$DATABASE_URL" ]; then
 fi
 
 # ------------------------------------------------------------
-# Write .env (Laravel 11 uses CACHE_STORE, not CACHE_DRIVER)
+# Write .env
 # ------------------------------------------------------------
 echo "=== Writing .env ==="
 cat > /var/www/html/.env <<EOF
@@ -48,7 +50,6 @@ APP_URL=${APP_URL:-https://edo-odyssey.onrender.com}
 
 LOG_CHANNEL=${LOG_CHANNEL:-stderr}
 
-# --- Database ---
 DB_CONNECTION=${DB_CONNECTION:-pgsql}
 DB_HOST=${DB_HOST}
 DB_PORT=${DB_PORT:-5432}
@@ -57,45 +58,40 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 DATABASE_URL=${DATABASE_URL}
 
-# --- Laravel 11 uses CACHE_STORE (not CACHE_DRIVER) ---
 CACHE_STORE=file
 CACHE_DRIVER=file
 SESSION_DRIVER=file
 SESSION_LIFETIME=120
 QUEUE_CONNECTION=sync
 
-# --- Cloudinary ---
 CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
 CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
 CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
 EOF
 
+chown www-data:www-data /var/www/html/.env
 chmod 644 /var/www/html/.env
 
 # ------------------------------------------------------------
-# Clear caches BEFORE migration — but only non-DB ones
+# Clear caches
 # ------------------------------------------------------------
-echo "=== Clearing config/view/route caches ==="
+echo "=== Clearing caches ==="
 php artisan config:clear
 php artisan view:clear
 php artisan route:clear
 php artisan clear-compiled
-# NOTE: skip cache:clear here — it can hit the DB and fail if the cache table doesn't exist yet
 
 # ------------------------------------------------------------
-# Run migrations
+# Migrations
 # ------------------------------------------------------------
 echo "=== Running Migrations ==="
 php artisan migrate --force --verbose
 
-# ------------------------------------------------------------
-# Now that tables exist, safe to clear cache
-# ------------------------------------------------------------
 echo "=== Clearing application cache ==="
 php artisan cache:clear || true
 
 # ------------------------------------------------------------
-# Seed only if database is empty
+# Seeding
 # ------------------------------------------------------------
 echo "=== Checking if database needs seeding ==="
 USER_COUNT=$(php artisan tinker --execute="echo \App\Models\User::count();" 2>/dev/null || echo "0")
@@ -107,14 +103,13 @@ else
 fi
 
 # ------------------------------------------------------------
-# Storage links
+# Storage link
 # ------------------------------------------------------------
 echo "=== Linking Storage ==="
 php artisan storage:link || true
 ln -sf /var/www/html/storage/app/public /var/www/html/public/storage || true
-
-chmod -R 775 /var/www/html/storage/app/public || true
-chmod -R 775 /var/www/html/public/storage || true
+chown -R www-data:www-data /var/www/html/storage/app/public || true
+chown -R www-data:www-data /var/www/html/public/storage || true
 
 # ------------------------------------------------------------
 # Optimize
@@ -123,7 +118,12 @@ echo "=== Optimizing Application ==="
 php artisan optimize
 
 # ------------------------------------------------------------
-# Start server
+# Set proper ownership for Nginx
 # ------------------------------------------------------------
-echo "=== Starting Server ==="
-exec php artisan serve --host=0.0.0.0 --port=10000
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# ------------------------------------------------------------
+# Start Supervisor (Nginx + PHP-FPM)
+# ------------------------------------------------------------
+echo "=== Starting Nginx + PHP-FPM via Supervisor ==="
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
