@@ -42,10 +42,10 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Copy Nginx config
-COPY docker/nginx.conf /etc/nginx/sites-available/default
+COPY docker/nginx/nginx.conf /etc/nginx/sites-available/default
 
 # Copy Supervisor config
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/nginx/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy startup script
 COPY start.sh /usr/local/bin/start.sh
