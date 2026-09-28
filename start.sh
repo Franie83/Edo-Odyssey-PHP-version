@@ -4,7 +4,7 @@ set -e
 echo "=== Starting Laravel Application ==="
 
 # ------------------------------------------------------------
-# Create storage directories if they don't exist
+# Create storage directories
 # ------------------------------------------------------------
 mkdir -p /var/www/html/storage/app/public
 mkdir -p /var/www/html/storage/framework/cache
@@ -16,23 +16,18 @@ chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
 
 # ------------------------------------------------------------
-# Parse DATABASE_URL into DB_* variables (Laravel doesn't do this natively)
+# Parse DATABASE_URL into DB_* variables
 # ------------------------------------------------------------
 if [ -n "$DATABASE_URL" ]; then
     echo "=== Parsing DATABASE_URL ==="
-    # Strip scheme
     DB_URL_NO_SCHEME="${DATABASE_URL#*://}"
-    # Split user:pass and host
     DB_CREDS="${DB_URL_NO_SCHEME%%@*}"
     DB_HOSTPART="${DB_URL_NO_SCHEME#*@}"
-    # Extract user and password
     export DB_USERNAME="${DB_CREDS%%:*}"
     export DB_PASSWORD="${DB_CREDS#*:}"
-    # Extract host and port
     DB_HOSTPORT="${DB_HOSTPART%%/*}"
     export DB_HOST="${DB_HOSTPORT%%:*}"
     export DB_PORT="${DB_HOSTPORT#*:}"
-    # Extract database name
     export DB_DATABASE="${DB_HOSTPART#*/}"
     echo "    DB_HOST=$DB_HOST"
     echo "    DB_PORT=$DB_PORT"
@@ -41,9 +36,9 @@ if [ -n "$DATABASE_URL" ]; then
 fi
 
 # ------------------------------------------------------------
-# Write .env from Render environment variables
+# Write .env (Laravel 11 uses CACHE_STORE, not CACHE_DRIVER)
 # ------------------------------------------------------------
-echo "=== Writing .env from Render env vars ==="
+echo "=== Writing .env ==="
 cat > /var/www/html/.env <<EOF
 APP_NAME="Edo Odyssey"
 APP_ENV=${APP_ENV:-production}
@@ -62,7 +57,8 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 DATABASE_URL=${DATABASE_URL}
 
-# --- Cache/Session/Queue (file-based for Render free tier) ---
+# --- Laravel 11 uses CACHE_STORE (not CACHE_DRIVER) ---
+CACHE_STORE=file
 CACHE_DRIVER=file
 SESSION_DRIVER=file
 SESSION_LIFETIME=120
@@ -77,20 +73,26 @@ EOF
 chmod 644 /var/www/html/.env
 
 # ------------------------------------------------------------
-# Clear all caches
+# Clear caches BEFORE migration — but only non-DB ones
 # ------------------------------------------------------------
-echo "=== Clearing all caches ==="
+echo "=== Clearing config/view/route caches ==="
 php artisan config:clear
-php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
 php artisan clear-compiled
+# NOTE: skip cache:clear here — it can hit the DB and fail if the cache table doesn't exist yet
 
 # ------------------------------------------------------------
 # Run migrations
 # ------------------------------------------------------------
 echo "=== Running Migrations ==="
 php artisan migrate --force --verbose
+
+# ------------------------------------------------------------
+# Now that tables exist, safe to clear cache
+# ------------------------------------------------------------
+echo "=== Clearing application cache ==="
+php artisan cache:clear || true
 
 # ------------------------------------------------------------
 # Seed only if database is empty
