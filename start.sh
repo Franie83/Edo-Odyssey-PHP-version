@@ -12,9 +12,33 @@ mkdir -p /var/www/html/storage/framework/sessions
 mkdir -p /var/www/html/storage/framework/views
 mkdir -p /var/www/html/bootstrap/cache
 
-# Set permissions
 chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
+
+# ------------------------------------------------------------
+# Parse DATABASE_URL into DB_* variables (Laravel doesn't do this natively)
+# ------------------------------------------------------------
+if [ -n "$DATABASE_URL" ]; then
+    echo "=== Parsing DATABASE_URL ==="
+    # Strip scheme
+    DB_URL_NO_SCHEME="${DATABASE_URL#*://}"
+    # Split user:pass and host
+    DB_CREDS="${DB_URL_NO_SCHEME%%@*}"
+    DB_HOSTPART="${DB_URL_NO_SCHEME#*@}"
+    # Extract user and password
+    export DB_USERNAME="${DB_CREDS%%:*}"
+    export DB_PASSWORD="${DB_CREDS#*:}"
+    # Extract host and port
+    DB_HOSTPORT="${DB_HOSTPART%%/*}"
+    export DB_HOST="${DB_HOSTPORT%%:*}"
+    export DB_PORT="${DB_HOSTPORT#*:}"
+    # Extract database name
+    export DB_DATABASE="${DB_HOSTPART#*/}"
+    echo "    DB_HOST=$DB_HOST"
+    echo "    DB_PORT=$DB_PORT"
+    echo "    DB_DATABASE=$DB_DATABASE"
+    echo "    DB_USERNAME=$DB_USERNAME"
+fi
 
 # ------------------------------------------------------------
 # Write .env from Render environment variables
@@ -29,13 +53,22 @@ APP_URL=${APP_URL:-https://edo-odyssey.onrender.com}
 
 LOG_CHANNEL=${LOG_CHANNEL:-stderr}
 
-DB_CONNECTION=pgsql
+# --- Database ---
+DB_CONNECTION=${DB_CONNECTION:-pgsql}
+DB_HOST=${DB_HOST}
+DB_PORT=${DB_PORT:-5432}
+DB_DATABASE=${DB_DATABASE}
+DB_USERNAME=${DB_USERNAME}
+DB_PASSWORD=${DB_PASSWORD}
 DATABASE_URL=${DATABASE_URL}
 
+# --- Cache/Session/Queue (file-based for Render free tier) ---
 CACHE_DRIVER=file
 SESSION_DRIVER=file
+SESSION_LIFETIME=120
 QUEUE_CONNECTION=sync
 
+# --- Cloudinary ---
 CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
 CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
 CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
@@ -54,7 +87,7 @@ php artisan route:clear
 php artisan clear-compiled
 
 # ------------------------------------------------------------
-# Run migrations (NOT migrate:fresh — preserves data)
+# Run migrations
 # ------------------------------------------------------------
 echo "=== Running Migrations ==="
 php artisan migrate --force --verbose
@@ -78,15 +111,11 @@ echo "=== Linking Storage ==="
 php artisan storage:link || true
 ln -sf /var/www/html/storage/app/public /var/www/html/public/storage || true
 
-# ------------------------------------------------------------
-# Set permissions for uploaded files
-# ------------------------------------------------------------
-echo "=== Setting storage permissions ==="
 chmod -R 775 /var/www/html/storage/app/public || true
 chmod -R 775 /var/www/html/public/storage || true
 
 # ------------------------------------------------------------
-# Optimize for production
+# Optimize
 # ------------------------------------------------------------
 echo "=== Optimizing Application ==="
 php artisan optimize
